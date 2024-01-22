@@ -6,5 +6,5 @@ In the files you will find the .exe and the txt with the program code.
 
 Something to mention, Windows Defender and other antivirus can detect the .exe file as a Trojan, this is a false positive.
 
-
+This is the beginning of several upcoming projects that I am going to do in Python, my idea is to create a personal portfolio later with them.
 
