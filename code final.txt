@@ -3,6 +3,34 @@ from tkinter import messagebox
 import secrets
 import string
 import os
+import pygame
+
+
+pygame.mixer.init()
+
+
+sound_path = "sounds/click1.mp3" 
+click_sound = pygame.mixer.Sound(sound_path)
+
+
+
+close_sound_path = "sounds/close.mp3"
+close_sound = pygame.mixer.Sound(close_sound_path)
+
+
+about_sound_path = "sounds/click3.mp3"
+about_sound = pygame.mixer.Sound(about_sound_path)
+
+
+history_sound_path = "sounds/click3.mp3"
+history_sound = pygame.mixer.Sound(history_sound_path)
+
+
+help_sound_path = "sounds/click3.mp3"
+help_sound = pygame.mixer.Sound(help_sound_path)
+
+
+history_label = None  
 
 
 def generate_password():
@@ -11,57 +39,95 @@ def generate_password():
 
         characters = "0123456789"
 
-       
         if special_var.get():
-            characters += "!@#$%^&*()_-+={}[]|\:;'<>,.?/~`"
+            characters += "!@#$%^&*()_-+={}[]|:;'<>,.?/~`"
 
-        
         if uppercase_var.get():
             characters += "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
-        
         if lowercase_var.get():
             characters += "abcdefghijklmnopqrstuvwxyz"
 
         password = ''.join(secrets.choice(characters) for _ in range(length))
         password_var.set(password)
 
-        
         password_history.append(password)
         if len(password_history) > 26:
-            password_history.pop(0)  
+            password_history.pop(0)
+
+        
+        update_password_history_label()
+
+        
+        click_sound.play()
 
     except ValueError:
         password_var.set("Error: Please enter a valid number")
+        
+        
+
+def update_password_history_label():
+    if history_label is not None:  
+        sorted_history = sorted(enumerate(password_history, start=1), key=lambda x: x[0], reverse=True)
+        sorted_passwords = [f"{num}: {password}" for num, password in sorted_history]
+        history_label.config(text="\n".join(sorted_passwords))
 
 
 
 def reset_password():
     password_var.set("")
     length_var.set("")
+    
+    
+    click_sound.play()    
+
+
+def play_close_sound():
+    close_sound.play()  
 
 
 def confirm_close_program():
+    
+    play_close_sound()  
+    
     result = messagebox.askquestion("Confirm close program", "Are you sure you want to close the program?")
+    
     if result == 'yes':
         window.destroy()
-
-
+    
+    
+        
 def clear_password_history():
+    
+    click_sound.play()    
+    
+    
     password_history.clear()
+    
+    
+    update_password_history_label()
+    
     messagebox.showinfo("Password History Cleared", "Password history has been cleared.")
 
 
+
+
+def play_about_sound():
+    about_sound.play() 
+
+
 def show_about():
+    play_about_sound()
+    
     global background_image_about
     if not is_window_open("About"):
         about_window = tk.Toplevel(window)
         about_window.title("About")
-        about_window.geometry("510x100")
+        about_window.geometry("510x400")
         about_window.resizable(False, False)
 
         
-        background_image_about_path = os.path.join(current_dir, "images", "background4.png")
+        background_image_about_path = os.path.join(current_dir, "images", "imageabout.png")
         try:
             background_image_about = tk.PhotoImage(file=background_image_about_path)
             background_label = tk.Label(about_window, image=background_image_about)
@@ -78,18 +144,24 @@ def show_about():
         else:
             print(f"Icon not found at: {icon_path}")
 
-        about_label = tk.Label(about_window, text=" PPG 1.0 \ This program was created by Gonzalo Ezequiel Temes in the year 2024\nKunker Studios RD", font=font_style, wraplength=300)
-        about_label.pack(pady=20, padx=20)
 
-#
+
+
+def play_history_sound():
+    history_sound.play() 
+
+
 def show_password_history():
+    global history_label
+    play_history_sound()
+
     if not is_window_open("Password History"):
         history_window = tk.Toplevel(window)
         history_window.title("Password History")
         history_window.geometry("510x720")
-        history_window.resizable(False, False)  
+        history_window.resizable(False, False)
+        history_window.protocol("WM_DELETE_WINDOW", lambda: on_history_window_close(history_window))
 
-       
         background_image_history_path = os.path.join(current_dir, "images", "background2.png")
         try:
             background_image = tk.PhotoImage(file=background_image_history_path)
@@ -98,32 +170,39 @@ def show_password_history():
         except tk.TclError as e:
             print(f"Error loading background image for Password History: {e}")
 
-        
         icon_path = os.path.join(current_dir, "images", "icon.ico")
 
-        
         if os.path.exists(icon_path):
             history_window.iconbitmap(icon_path)
         else:
             print(f"Icon not found at: {icon_path}")
 
-        
-        sorted_history = sorted(enumerate(password_history, start=1), key=lambda x: x[0], reverse=True)
-        sorted_passwords = [f"{num}: {password}" for num, password in sorted_history]
-
-        
-        history_label = tk.Label(history_window, text="\n".join(sorted_passwords), font=font_style, fg="black")
+        # Definir history_label en el alcance global
+        global history_label
+        history_label = tk.Label(history_window, font=font_style, fg="#523904", bg="#d6d6d6")
         history_label.pack(pady=20, padx=20)
 
-        
         clear_button = tk.Button(history_window, text="Clear History", command=clear_password_history, **button_style)
         clear_button.pack(pady=10)
 
-        
         history_window.image = background_image
 
 
+def on_history_window_close(history_window):
+    global history_label
+    history_label = None
+    history_window.destroy()
+
+
+
+
+def play_help_sound():
+    help_sound.play()  
+
+
 def show_help():
+    play_help_sound()
+    
     global background_image_help
     if not is_window_open("Help"):
         help_window = tk.Toplevel(window)
@@ -162,8 +241,10 @@ def show_help():
         text_frame.pack(pady=20, padx=20)
 
         
-        text_bg_color = "#d1d1d1"
-        help_text_widget = tk.Text(text_frame, wrap="word", font=font_style, width=40, height=20, bg=text_bg_color)
+        text_bg_color = "#d6d6d6"  
+        text_fg_color = "#523904"  
+
+        help_text_widget = tk.Text(text_frame, wrap="word", font=font_style, width=40, height=20, bg=text_bg_color, fg=text_fg_color)
         help_text_widget.insert(tk.END, help_text)
         help_text_widget.config(state="disabled")
         help_text_widget.pack()
