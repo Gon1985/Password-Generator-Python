@@ -1,4 +1,4 @@
-# Password-Generator-Python
+# Password-Generator-Python (UPDATED!)
 password generator program portable
 -----------------------------------
 This is a program created entirely in Python. Its only function is to generate passwords...
